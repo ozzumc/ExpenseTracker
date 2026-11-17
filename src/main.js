@@ -107,6 +107,7 @@ form.addEventListener('submit', (event) => {
 
   if(!CATEGORIES.includes(category)) {
     alert('invalid')
+    return
   }
 
   expenses.push({ id: nextId++, description, amount, category})
