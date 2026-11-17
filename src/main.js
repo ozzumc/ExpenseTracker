@@ -53,17 +53,76 @@ function renderList(){
         <p class="font-medium">${escapeHtml(expense.description)}</p>
         <p class="text-sm text-slate-500">${expense.category}</p>
       </div> 
+      <div class="flex items-center gap-3">
+      <span class="font-semibold">${formatMoney(expense.amount)}</span>
+      <button data-id="${expense.id}" class="cursor-pointer text-sm text-red-500 hover:underline">delete</button>
+      </div>
 
-      
     </li>
     `
   }
-  
+  listEl.innerHTML = html
 }
 
+
+function renderTotals(){
+  grandTotal.textContent = formatMoney(getGrandTotal())
+
+  const totals = getCategoryTotals()
+  const entries = Object.entries(totals)
+
+  if(entries.length === 0){
+    categoryTotal.innerHTML = '<li class="text-slate-500">-</li>'
+  }
+
+  categoryTotal.innerHTML = entries
+  .map(
+    ([category,amount]) => `
+    <li class=flex justify-between">
+      <span>${category}</span>
+      <span class="font-medium">${formatMoney(amount)}</span>
+    </li>  
+      `
+  )
+  .join('')
+}
 
 function render(){
-
+  renderList()
+  renderTotals()
 }
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault()
+
+  const description = descriptionInput.value.trim()
+  const amount = Number(amountInput.value)
+  const category = categoryInput.value
+
+  if(description === '') {
+    alert('description empty')
+    descriptionInput.focus()
+    return
+  }
+
+  if(!CATEGORIES.includes(category)) {
+    alert('invalid')
+  }
+
+  expenses.push({ id: nextId++, description, amount, category})
+
+  form.reset()
+  descriptionInput.focus()
+  render()
+})
+
+listEl.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-id]')
+  if(!button) return
+
+  const id = Number(button.dataset.id)
+  expenses = expenses.filter((expense) => expense.id !== id)
+  render()
+})
 
 render()
