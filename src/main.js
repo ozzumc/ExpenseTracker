@@ -3,7 +3,7 @@ import './style.css'
 let expenses = [
   {id: 1, description: 'Coffee', amount: 120, category: 'Food'},
   {id: 2, description: 'Bus Ticket', amount: 40, category: 'Transport'},
-  {id: 3, description: 'Electricity, amount: 1500', category: 'Bills'},
+  {id: 3, description: 'Electricity', amount: 1500, category: 'Bills'},
 ]
 
 const Categories = ['Food', 'Transport', 'Bills', 'Entertainment', 'Other']
@@ -36,7 +36,9 @@ function getCategoryTotals() {
   return sum
 }
 
-
+function formatMoney(value){
+  return value.toFixed(2)
+}
 
 function renderList(){
   if (expenses.length === 0) {
@@ -50,7 +52,7 @@ function renderList(){
     html += `
     <li class="flex items-center justify-between py-3">
       <div>
-        <p class="font-medium">${escapeHtml(expense.description)}</p>
+        <p class="font-medium">${expense.description}</p>
         <p class="text-sm text-slate-500">${expense.category}</p>
       </div> 
       <div class="flex items-center gap-3">
@@ -70,6 +72,8 @@ function renderTotals(){
 
   const totals = getCategoryTotals()
   const entries = Object.entries(totals)
+
+  
 
   if(entries.length === 0){
     categoryTotal.innerHTML = '<li class="text-slate-500">-</li>'
@@ -96,8 +100,8 @@ form.addEventListener('submit', (event) => {
   event.preventDefault()
 
   const description = descriptionInput.value.trim()
-  const amount = Number(amountInput.value)
-  const category = categoryInput.value
+  const amountInput = Number(amount.value)
+  const categoryInput = category.value
 
   if(description === '') {
     alert('description empty')
@@ -105,12 +109,14 @@ form.addEventListener('submit', (event) => {
     return
   }
 
-  if(!CATEGORIES.includes(category)) {
+  
+
+  if(!Categories.includes(categoryInput)) {
     alert('invalid')
     return
   }
 
-  expenses.push({ id: nextId++, description, amount, category})
+  expenses.push({ id: nextId++, description, amount:amountInput, categoryInput})
 
   form.reset()
   descriptionInput.focus()
