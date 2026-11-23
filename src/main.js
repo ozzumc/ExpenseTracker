@@ -1,14 +1,27 @@
 import './style.css'
 
-let expenses = [
-  {id: 1, description: 'Coffee', amount: 120, category: 'Food'},
-  {id: 2, description: 'Bus Ticket', amount: 40, category: 'Transport'},
-  {id: 3, description: 'Electricity', amount: 1500, category: 'Bills'},
-]
 
+const STORAGE_KEY = 'expenses'
 const Categories = ['Food', 'Transport', 'Bills', 'Entertainment', 'Other']
 
-let nextId = 1
+function save_expenses(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
+}
+
+function loadExpenses(){
+  const saved = localStorage.getItem(STORAGE_KEY)
+
+  if (saved === null) return []
+
+  try {
+      return JSON.parse(saved)
+  } catch {
+    return []
+  }
+}
+
+let expenses = loadExpenses()
+let nextId = expenses.reduce ((max, expense)  => Math.max(max, expense.id), 0) + 1
 
 const listEl = document.querySelector('#expense-list')
 const form = document.querySelector('#expense-form')
@@ -28,12 +41,16 @@ function getGrandTotal(){
 }
 
 function getCategoryTotals() {
-  let sum = 0
-  for(const expense of expenses) {
-    sum += expense.categoryTotal
+  const totals = {}
+
+  for (const expense of expenses) {
+    if (totals[expense.category] === undefined) {
+      totals[expense.category] = 0
+    }
+    totals[expense.category] += expense.amount
   }
 
-  return sum
+  return totals
 }
 
 function formatMoney(value){
@@ -77,12 +94,13 @@ function renderTotals(){
 
   if(entries.length === 0){
     categoryTotal.innerHTML = '<li class="text-slate-500">-</li>'
+    return
   }
 
   categoryTotal.innerHTML = entries
   .map(
     ([category,amount]) => `
-    <li class=flex justify-between">
+    <li class="flex justify-between">
       <span>${category}</span>
       <span class="font-medium">${formatMoney(amount)}</span>
     </li>  
@@ -109,14 +127,19 @@ form.addEventListener('submit', (event) => {
     return
   }
 
-  
+  if (!Number.isFinite(amountInput) || amountInput <= 0) {
+  alert('Tutar pozitif bir sayı olmalı.')
+  amount.focus()
+  return
+}
 
   if(!Categories.includes(categoryInput)) {
     alert('invalid')
     return
   }
 
-  expenses.push({ id: nextId++, description, amount:amountInput, categoryInput})
+  expenses.push({ id: nextId++, description, amount:amountInput, category:categoryInput})
+  save_expenses()
 
   form.reset()
   descriptionInput.focus()
@@ -129,6 +152,7 @@ listEl.addEventListener('click', (event) => {
 
   const id = Number(button.dataset.id)
   expenses = expenses.filter((expense) => expense.id !== id)
+  save_expenses()
   render()
 })
 
